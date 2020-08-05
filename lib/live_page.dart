@@ -36,7 +36,7 @@ class _LivePageState extends State<LivePage> {
     );
   }
 
-  String pushUrl = 'rtmp://look.apitripalink.com/live/tripalink?txSecret=da9275a6bf0440c61eb084c3d6b85ab2&txTime=5F2B9999';
+  String pushUrl = 'rtmp://look.apitripalink.com/live/tripalink?txSecret=066d815fd1f29490aa2cecd1e695c0e2&txTime=5F3E111C';
 
   @override
   Widget build(BuildContext context) {
