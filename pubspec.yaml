@@ -31,6 +31,7 @@ dependencies:
   rtmp_tencent_live: ^0.0.7+3
   permission_handler: ^5.0.1+1
   dio: ^3.0.9
+  tencent_im_plugin: ^0.2.42
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qqlivedemo/live_page.dart';
+import 'package:tencent_im_plugin/enums/log_print_level.dart';
+import 'package:tencent_im_plugin/tencent_im_plugin.dart';
 
 class EmptyPage extends StatefulWidget{
   @override
@@ -22,6 +24,8 @@ class EmptyPageState extends State<EmptyPage> {
   void initState() {
 
     super.initState();
+    TencentImPlugin.init(
+        appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       request();
     });
@@ -52,7 +56,13 @@ class EmptyPageState extends State<EmptyPage> {
         }));
       });
     }else{
-      if(await Permission.camera.request().isGranted){
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.camera,
+        Permission.storage,
+        Permission.storage,
+        Permission.microphone,
+      ].request();
+      if(statuses.values.every((element) => element.isGranted)){
         Future.delayed(Duration(milliseconds: 10)).then((value){
           Navigator.of(context).push(new MaterialPageRoute(builder: (ctx){
             return LivePage();
