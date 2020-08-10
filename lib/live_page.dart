@@ -162,6 +162,7 @@ class _LivePageState extends State<LivePage> {
   void dispose() {
     super.dispose();
     TencentImPlugin.removeListener(listener);
+    textEditingController.dispose();
   }
 
 
