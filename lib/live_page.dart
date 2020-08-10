@@ -10,6 +10,8 @@ import 'package:rtmp_tencent_live/tencent_live.dart';
 import 'package:rtmp_tencent_live/tencent_live_push_Controller.dart';
 import 'package:tencent_im_plugin/entity/message_entity.dart';
 import 'package:tencent_im_plugin/entity/session_entity.dart';
+import 'package:tencent_im_plugin/enums/log_print_level.dart';
+import 'package:tencent_im_plugin/message_node/text_message_node.dart';
 import 'package:tencent_im_plugin/tencent_im_plugin.dart';
 
 class LivePage extends StatefulWidget {
@@ -43,6 +45,7 @@ class _LivePageState extends State<LivePage> {
 
   String pushUrl = 'rtmp://look.apitripalink.com/live/tripalink?txSecret=066d815fd1f29490aa2cecd1e695c0e2&txTime=5F3E111C';
 
+  TextEditingController textEditingController = TextEditingController();
 
   ///IM相关
 
@@ -59,8 +62,11 @@ class _LivePageState extends State<LivePage> {
     await TencentImPlugin.login(
       identifier: "pusher",
       userSig:
-      "eJyrVgrxCdYrSy1SslIy0jNQ0gHzM1NS80oy0zLBwgWlxUAaIlGckp1YUJCZomRlaGJgYGJgYW5pApFJrSjILEoFipuamhoZGBhAREsyc8FiluYGRsaWphZQUzLTgeaaWpSlaicV*sfom*WWZLjk5PnneYUblTi6ukQEeyVVhOa6l1a5*XpWOBkGG9gq1QIAb9Yx2g__",
-    );
+      "eJwtjMsKwjAQRf8layljmtAHuLEuCnYhRCwulUzrUKppEl*I-25o3N17DpwP2zcqeaBlJeMJsMX8SePVU0czNnd3CSMap4eTMaRZuRQAAvKsENHgy5DFwKWUHAAi9TTOrMiA5zLl-wr1IUzcbyvFvartRrVjPrUG2-SI*Hbnale74dA9yTXTur6t2PcHjA0y6w__",
+    ).then((value)async{
+      await TencentImPlugin.applyJoinGroup(groupId: id
+          , reason: 'hello');
+    });
 //    Navigator.of(context).push(new MaterialPageRoute(
 //        builder: (ctx)=>ChatPage(id: '@TGS#a2HHHJUGA',type: SessionType.Group,)));
   }
@@ -77,7 +83,7 @@ class _LivePageState extends State<LivePage> {
         debugPrint('data  ------- ${data.last.data.toJson().toString()}');
       });
       // 设置已读
-      TencentImPlugin.setRead(sessionId: widget.id, sessionType: widget.type);
+      TencentImPlugin.setRead(sessionId: id, sessionType: type);
     }
     ///test
     ///test
@@ -98,6 +104,8 @@ class _LivePageState extends State<LivePage> {
 
         }
       }
+
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
 
 
     }
@@ -140,10 +148,14 @@ class _LivePageState extends State<LivePage> {
 
   @override
   void initState() {
-
+    init();
     super.initState();
     // 添加监听器
     TencentImPlugin.addListener(listener);
+  }
+  void init()async{
+    await TencentImPlugin.init(
+        appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
   }
 
   @override
@@ -281,9 +293,10 @@ class _LivePageState extends State<LivePage> {
                                       fontSize: 20.0
                                   )),
                                   color: Colors.blue,
-                                  onPressed: (){
-                                    _controller.startLive();
+                                  onPressed: ()async{
+                                    //_controller.startLive();
                                     loginAA();
+
                                   },
                                 ),
                               ],
@@ -298,16 +311,58 @@ class _LivePageState extends State<LivePage> {
             Align(
               alignment: Alignment.bottomLeft,
               child: Container(
-                color: Colors.white,
+                color: Colors.white.withOpacity(0.3),
                 width: MediaQuery.of(context).size.width,height: 300,
-                child: ListView(
-                  controller: scrollController,
-                  children: data.map((e){
-                    return Container(
-                      width: MediaQuery.of(context).size.width,height: 60,
-                      child: Text('note : ${e.data.note}',style: TextStyle(color: Colors.black),),
-                    );
-                  }).toList(),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        children: data.map((e){
+                          return Container(
+                            width: MediaQuery.of(context).size.width,height: 60,
+                            child: Text('note : ${e.data.note}',style: TextStyle(color: Colors.black),),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      margin: EdgeInsets.only(bottom: 10),
+                      width: MediaQuery.of(context).size.width,height: 40,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: textEditingController,
+                              decoration: InputDecoration(
+                                hintText: 'input 666 , laoTie!',
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: ()async{
+                              await TencentImPlugin.sendMessage(sessionId: '@TGS#a2HHHJUGA',
+                                sessionType: SessionType.Group, node: TextMessageNode(
+                                  content: textEditingController.text??"",
+                                ),).then((value) {
+
+                                  textEditingController?.clear();
+                                debugPrint('msg recall  ${value.toJson().toString()}');
+                              });
+
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              color: Colors.orange,
+                              width: 60,height: 40,
+                              child: Text('发送',style: TextStyle(color: Colors.black),),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

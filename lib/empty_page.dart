@@ -24,8 +24,7 @@ class EmptyPageState extends State<EmptyPage> {
   void initState() {
 
     super.initState();
-    TencentImPlugin.init(
-        appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       request();
     });
