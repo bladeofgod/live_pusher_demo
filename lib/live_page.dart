@@ -100,13 +100,13 @@ class _LivePageState extends State<LivePage> {
           }
 
           // 设置已读
-          //TencentImPlugin.setRead(sessionId: widget.id, sessionType: widget.type);
+          TencentImPlugin.setRead(sessionId: pusherName, sessionType: type);
 
         }
       }
 
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
-      TencentImPlugin.setRead(sessionId: id, sessionType: type);
+
     }
     ///test
     ///test
@@ -123,7 +123,7 @@ class _LivePageState extends State<LivePage> {
           }
 
           // 设置已读
-          //TencentImPlugin.setRead(sessionId: widget.id, sessionType: widget.type);
+          TencentImPlugin.setRead(sessionId: pusherName, sessionType: type);
 
         }
       }
@@ -179,6 +179,7 @@ class _LivePageState extends State<LivePage> {
   void init()async{
     await TencentImPlugin.init(
         appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
+    loginAA();
 
   }
 
@@ -326,9 +327,7 @@ class _LivePageState extends State<LivePage> {
                                       ));
                                       return ;
                                     }
-                                    _controller.startLive().whenComplete((){
-                                      loginAA();
-                                    });
+                                    await _controller.startLive();
 
 
 
