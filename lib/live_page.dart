@@ -5,6 +5,7 @@
 
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:rtmp_tencent_live/tencent_live.dart';
 import 'package:rtmp_tencent_live/tencent_live_push_Controller.dart';
@@ -20,6 +21,9 @@ class LivePage extends StatefulWidget {
 }
 
 class _LivePageState extends State<LivePage> {
+
+  final String pusherName = 'pusher';
+
   TencentLivePushController _controller;
 
   double value = 0;
@@ -43,7 +47,7 @@ class _LivePageState extends State<LivePage> {
     );
   }
 
-  String pushUrl = 'rtmp://look.apitripalink.com/live/tripalink?txSecret=066d815fd1f29490aa2cecd1e695c0e2&txTime=5F3E111C';
+  String pushUrl = '';
 
   TextEditingController textEditingController = TextEditingController();
 
@@ -60,7 +64,7 @@ class _LivePageState extends State<LivePage> {
 
   void loginAA()async{
     await TencentImPlugin.login(
-      identifier: "pusher",
+      identifier: pusherName,
       userSig:
       "eJwtjMsKwjAQRf8layljmtAHuLEuCnYhRCwulUzrUKppEl*I-25o3N17DpwP2zcqeaBlJeMJsMX8SePVU0czNnd3CSMap4eTMaRZuRQAAvKsENHgy5DFwKWUHAAi9TTOrMiA5zLl-wr1IUzcbyvFvartRrVjPrUG2-SI*Hbnale74dA9yTXTur6t2PcHjA0y6w__",
     ).then((value)async{
@@ -156,6 +160,16 @@ class _LivePageState extends State<LivePage> {
   void init()async{
     await TencentImPlugin.init(
         appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
+    getPusherUrl();
+  }
+  void getPusherUrl()async{
+    Dio dio = Dio();
+    var result = await dio.get('https://api.tripalink.com/index.php',
+      queryParameters: {'r':'index/get-push-url','push_name':pusherName});
+    if(result != null){
+      pushUrl = result.data['data']??'';
+      debugPrint('push url $pushUrl');
+    }
   }
 
   @override
@@ -295,6 +309,12 @@ class _LivePageState extends State<LivePage> {
                                   )),
                                   color: Colors.blue,
                                   onPressed: ()async{
+                                    if(pushUrl.isEmpty){
+                                      Scaffold.of(context).showSnackBar(SnackBar(
+                                        content: Text('push url is empty'),
+                                      ));
+                                      return ;
+                                    }
                                     _controller.startLive().then((value) => loginAA());
 
 
@@ -322,7 +342,7 @@ class _LivePageState extends State<LivePage> {
                         children: data.map((e){
                           return Container(
                             width: MediaQuery.of(context).size.width,height: 60,
-                            child: Text('pusher : ${e.data.note}',style: TextStyle(color: Colors.black),),
+                            child: Text('$pusherName : ${e.data.note}',style: TextStyle(color: Colors.black),),
                           );
                         }).toList(),
                       ),
