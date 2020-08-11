@@ -4,6 +4,7 @@
 */
 
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qqlivedemo/live_page.dart';
@@ -49,11 +50,7 @@ class EmptyPageState extends State<EmptyPage> {
   void request() async{
     var status = await Permission.camera.status;
     if (status.isGranted) {
-      Future.delayed(Duration(milliseconds: 10)).then((value){
-        Navigator.of(context).push(new MaterialPageRoute(builder: (ctx){
-          return LivePage();
-        }));
-      });
+      getPusherUrl();
     }else{
       Map<Permission, PermissionStatus> statuses = await [
         Permission.camera,
@@ -62,13 +59,26 @@ class EmptyPageState extends State<EmptyPage> {
         Permission.microphone,
       ].request();
       if(statuses.values.every((element) => element.isGranted)){
-        Future.delayed(Duration(milliseconds: 10)).then((value){
-          Navigator.of(context).push(new MaterialPageRoute(builder: (ctx){
-            return LivePage();
-          }));
-        });
+        getPusherUrl();
       }
     }
 
+  }
+
+  final String pusherName = 'pusher';
+  void getPusherUrl()async{
+    String url = '';
+    Dio dio = Dio();
+    var result = await dio.get('https://api.tripalink.com/index.php',
+        queryParameters: {'r':'index/get-push-url','push_name':pusherName});
+    if(result != null){
+      url = result.data['data']??'';
+      debugPrint('push url $url');
+      Future.delayed(Duration(milliseconds: 10)).then((value){
+        Navigator.of(context).push(new MaterialPageRoute(builder: (ctx){
+          return LivePage(pushUrl:url ,);
+        }));
+      });
+    }
   }
 }

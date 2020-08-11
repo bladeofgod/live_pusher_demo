@@ -16,6 +16,12 @@ import 'package:tencent_im_plugin/message_node/text_message_node.dart';
 import 'package:tencent_im_plugin/tencent_im_plugin.dart';
 
 class LivePage extends StatefulWidget {
+
+  final String pushUrl;
+
+  const LivePage({Key key, this.pushUrl}) : super(key: key);
+
+
   @override
   _LivePageState createState() => _LivePageState();
 }
@@ -47,7 +53,7 @@ class _LivePageState extends State<LivePage> {
     );
   }
 
-  String pushUrl = '';
+
 
   TextEditingController textEditingController = TextEditingController();
 
@@ -82,11 +88,24 @@ class _LivePageState extends State<LivePage> {
     // 新消息时更新会话列表最近的聊天记录
     if (type == ListenerTypeEnum.NewMessages) {
       // 更新消息列表
-      this.setState(() {
-        data.add(DataEntity(data: params));
-        debugPrint('data  ------- ${data.last.data.toJson().toString()}');
-      });
-      // 设置已读
+      for(var i in params){
+        if(i is SessionEntity){
+          // 更新消息列表
+          debugPrint('refresh data  ${i.message.toJson().toString()}');
+          if(!i.message.read){
+            this.setState(() {
+              data.add(DataEntity(data: i.message));
+
+            });
+          }
+
+          // 设置已读
+          //TencentImPlugin.setRead(sessionId: widget.id, sessionType: widget.type);
+
+        }
+      }
+
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
       TencentImPlugin.setRead(sessionId: id, sessionType: type);
     }
     ///test
@@ -96,7 +115,7 @@ class _LivePageState extends State<LivePage> {
         if(i is SessionEntity){
           // 更新消息列表
           debugPrint('refresh data  ${i.message.toJson().toString()}');
-          if(i.message.read){
+          if(!i.message.read){
             this.setState(() {
               data.add(DataEntity(data: i.message));
 
@@ -160,17 +179,9 @@ class _LivePageState extends State<LivePage> {
   void init()async{
     await TencentImPlugin.init(
         appid: "1400408794", logPrintLevel: LogPrintLevel.debug);
-    getPusherUrl();
+
   }
-  void getPusherUrl()async{
-    Dio dio = Dio();
-    var result = await dio.get('https://api.tripalink.com/index.php',
-      queryParameters: {'r':'index/get-push-url','push_name':pusherName});
-    if(result != null){
-      pushUrl = result.data['data']??'';
-      debugPrint('push url $pushUrl');
-    }
-  }
+
 
   @override
   void dispose() {
@@ -189,7 +200,7 @@ class _LivePageState extends State<LivePage> {
         child: Stack(
           children: <Widget>[
             TencentLiveView(
-                rtmpURL:pushUrl,
+                rtmpURL:widget.pushUrl,
                 onCreated: (controller) {
                   _controller = controller;
                 }
@@ -309,13 +320,16 @@ class _LivePageState extends State<LivePage> {
                                   )),
                                   color: Colors.blue,
                                   onPressed: ()async{
-                                    if(pushUrl.isEmpty){
+                                    if(widget.pushUrl.isEmpty){
                                       Scaffold.of(context).showSnackBar(SnackBar(
                                         content: Text('push url is empty'),
                                       ));
                                       return ;
                                     }
-                                    _controller.startLive().then((value) => loginAA());
+                                    _controller.startLive().whenComplete((){
+                                      loginAA();
+                                    });
+
 
 
                                   },
@@ -342,7 +356,7 @@ class _LivePageState extends State<LivePage> {
                         children: data.map((e){
                           return Container(
                             width: MediaQuery.of(context).size.width,height: 60,
-                            child: Text('$pusherName : ${e.data.note}',style: TextStyle(color: Colors.black),),
+                            child: Text('${e.data.userInfo.identifier} : ${e.data.note}',style: TextStyle(color: Colors.black),),
                           );
                         }).toList(),
                       ),
