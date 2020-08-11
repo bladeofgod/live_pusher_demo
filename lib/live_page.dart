@@ -295,8 +295,8 @@ class _LivePageState extends State<LivePage> {
                                   )),
                                   color: Colors.blue,
                                   onPressed: ()async{
-                                    //_controller.startLive();
-                                    loginAA();
+                                    _controller.startLive().then((value) => loginAA());
+
 
                                   },
                                 ),
@@ -322,7 +322,7 @@ class _LivePageState extends State<LivePage> {
                         children: data.map((e){
                           return Container(
                             width: MediaQuery.of(context).size.width,height: 60,
-                            child: Text('note : ${e.data.note}',style: TextStyle(color: Colors.black),),
+                            child: Text('pusher : ${e.data.note}',style: TextStyle(color: Colors.black),),
                           );
                         }).toList(),
                       ),
